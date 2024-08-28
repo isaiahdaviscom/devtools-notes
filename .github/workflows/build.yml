@@ -1,0 +1,53 @@
+# Add to workflow: Tagged Release Notes and Version upgrade 
+# https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions
+name: deploy
+# 
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+# 
+jobs:
+  build-and-deploy:
+    concurrency: ci-${{ github.ref }}
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      # https://github.com/actions/checkout
+      - name: Checkout
+        uses: actions/checkout@v3
+      # https://docs.npmjs.com/cli/v8/commands/npm-ci
+      - name: Build
+        run: |
+          npm ci
+          npm run build
+      # jeoy/github-deploy-actions@master
+      - name: Deploy
+        uses: jeoy/github-deploy-actions@master
+        env:
+          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          BASE_BRANCH: main
+          # BUILD_SCRIPT: npm install && npm run build
+          COMMIT_EMAIL: ${{ github.email }}
+          COMMIT_NAME: ${{ github.username }}
+          DEPLOY_BRANCH: deploy
+          FOLDER: build
+      # https://github.com/marketplace/actions/easy-zip-files
+      - name: Package
+        uses: vimtor/action-zip@v1
+        with: 
+          files: ../../build
+          dest: dist/extension.zip
+      # https://github.com/marketplace/actions/chrome-extension-upload-action
+      - name: Publish
+        uses: mnao305/chrome-extension-upload@3.0.0
+        with:
+          app-id: ${{ secret.CHROME_APP_ID }}
+          client-id: ${{ secret.CHROME_CLIENT_ID }}
+          client-secret: ${{ secret.CHROME_CLIENT_SECRET }}
+          file-name: 'dist/extension.zip'
+          publish: true
+          refresh-token: ${{ secret.CHROME_REFRESH_TOKEN }}

@@ -1,0 +1,15 @@
+{
+  "short_name": "Notes",
+  "name": "DevTools - Notes",
+  "manifest_version": 3,
+  "version": "0.0.1",
+  "description": "A Google Chrome DevTool extensions for creating notes.",
+  "author": "Thiago Pessia",
+  "icons": [
+    {
+      "64": "logo64.png"
+    }
+  ],
+  "devtools_page": "index.html",
+  "permissions": [ "storage" ]
+}
